@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 import "dotenv/config";
 
 mongoose.set("strictQuery", true);
-const mongodb_url = "mongodb+srv://IM:amira2001@atlascluster.pdut1ay.mongodb.net/contact?retryWrites=true&w=majority&appName=AtlasCluster"; // Connection string
+
+const mongodb_url = "mongodb://localhost:27017/contact";
 
 const connectDB = async () => {
   try {
