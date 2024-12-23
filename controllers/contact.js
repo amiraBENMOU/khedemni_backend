@@ -6,10 +6,10 @@ import Contact from "../models/contact.js";
 export const createContact = async (req, res) => {
   const { fullName, email, content } = req.body;
 
+  console.log("Request Body:", req.body);
+
 
   if (!fullName || !email || !content) {
-
-    console.log(fullName,email,content)
 
     throw console.log("Please provide all values");
   }

@@ -10,23 +10,26 @@ import contactRouter from "./routes/contact.js";
 
 const app = express();
 
-
+//middelware
 app.use(cors());
-app.options("*", cors());
+app.options("*", cors()); // For preflight requests
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 // Routes
-app.get("/", async (req, res) => {
-  res.json({ message: "  Hello world " });
-});
-
 app.use("/contact", contactRouter);
-
-// Catch-all for routes that do not exist
-app.use((req, res) => {
-  res.status(404).json({ message: "Route doesn't exist" });
+app.get("/", async (req, res) => {
+  res.json({ message: "Hello world" });
 });
+
+// Catch-all for undefined routes
+app.use(notFoundRoute);
+
+// Error handling
+app.use(errorHandler);
+
+
 
 app.use(errorHandler);
 app.use(notFoundRoute);
