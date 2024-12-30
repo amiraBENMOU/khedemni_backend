@@ -76,3 +76,20 @@ export const deleteContact = async (req, res) => {
     .json({ message: `Contact created by  ${contact.fullName} deleted with success.` });
 };
 
+//report controller 
+
+exports.getContactReport = asyncErrorHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const contact = await Contact.findById(id);
+  if (!contact) return next(new HttpError.NotFoundError("contact not found"));
+
+  const data = await contact.getContactById(id);
+
+  const pdf = await buildReport("../view/contact.hbs", data, {
+    format: "A4",
+    landscape: true,
+  });
+  const stream = Readable.from(pdf);
+  stream.pipe(res);
+});
+
