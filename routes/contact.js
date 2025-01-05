@@ -6,7 +6,7 @@ import {
   getContactById,
   getContacts,
   updateContact,
-  getContactReport
+  getContactReport,
 } from "../controllers/contact.js";
 
 

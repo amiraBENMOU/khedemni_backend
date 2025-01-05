@@ -1,6 +1,9 @@
 import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
 // { BadRequestErrorAPI } from "../utils/errorAPI";
 import Contact from "../models/Contact.js";
+import  buildReport from "../utils/pdf.js";
+import { Readable } from "stream"; // Import Readable
 
 /************************** Contact MANAGMENT  ********************************/
 export const createContact = async (req, res) => {
@@ -42,7 +45,12 @@ export const getContacts = async (req, res) => {
 
 export const getContactById = async (req, res) => {
   const { id } = req.params;
-  const contact = await Contact.findById(id);
+    // Validate `id` to ensure it's a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid contact ID.' });
+    }
+  
+   const contact = await Contact.findById(id);
   res.status(StatusCodes.OK).json(contact);
 };
 
@@ -76,20 +84,30 @@ export const deleteContact = async (req, res) => {
     .json({ message: `Contact created by  ${contact.fullName} deleted with success.` });
 };
 
-//report controller 
 
-exports.getContactReport = asyncErrorHandler(async (req, res, next) => {
+export const getContactReport = async (req, res, next) => {
   const { id } = req.params;
+  console.log("id", id);
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid contact ID.' });
+  }
+
   const contact = await Contact.findById(id);
-  if (!contact) return next(new HttpError.NotFoundError("contact not found"));
+  if (!contact) return next(new HttpError.NotFoundError("Contact not found"));
 
-  const data = await contact.getContactById(id);
-
-  const pdf = await buildReport("../view/contact.hbs", data, {
+  const data = { contacts: [contact.toObject()] };
+     console.log("data", data);
+  const pdfBuffer = await buildReport("../view/contact.hbs", data, {
     format: "A4",
     landscape: true,
   });
-  const stream = Readable.from(pdf);
-  stream.pipe(res);
-});
 
+  // Create a readable stream from the PDF buffer
+  const stream = new Readable();
+  stream.push(pdfBuffer);
+  stream.push(null);
+
+  res.setHeader('Content-Type', 'application/pdf');
+  stream.pipe(res);
+};
