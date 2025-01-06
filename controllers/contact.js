@@ -11,9 +11,47 @@ export const createContact = async (req, res) => {
 
   console.log("Request Body:", req.body);
 
-  if (!fullName || !email || !content) {
-    throw console.log("Please provide all values");
+  const validateContact = (fullName, email, content) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const validDomains = ["hotmail.fr", "gmail.com"];
+    const emailDomain = email.split("@")[1];
+
+    if (!fullName || fullName.length <= 4) {
+      return "INVALID_FULLNAME";
+    }
+
+    if (!email || !email.includes("@") || !emailRegex.test(email) || !validDomains.includes(emailDomain)) {
+      return "INVALID_EMAIL";
+    }
+
+    if (!content || content.length <= 4) {
+      return "INVALID_CONTENT";
+    }
+
+    return "VALID";
+  };
+
+  const validationResult = validateContact(fullName, email, content);
+
+  switch (validationResult) {
+    case "INVALID_FULLNAME":
+      return res.status(400).json({ message: "Full name is required and must be greater than 4 characters." });
+    case "INVALID_EMAIL":
+      return res.status(400).json({ message: "Email is required and must be a valid email address including @ and ending with 'hotmail.fr' or 'gmail.com'." });
+    case "INVALID_CONTENT":
+      return res.status(400).json({ message: "Content is required and must be greater than 4 characters." });
+    case "VALID":
+      console.log("All validations passed");
+      break;
+    default:
+      return res.status(400).json({ message: "Invalid contact" });
   }
+
+// Check for duplicate contact
+const existingContact = await Contact.findOne({ fullName, email, content });
+if (existingContact) {
+  return res.status(400).json({ message: "A contact with the same name, email, and content already exists." });
+}
 
   const contact = await Contact.create({
     fullName,
@@ -21,9 +59,8 @@ export const createContact = async (req, res) => {
     content,
   });
 
-  res.status(StatusCodes.CREATED).json(contact);
+  res.status(201).json(contact);
 };
-
 export const getContacts = async (req, res) => {
   const { fullName, email, id } = req.query;
 
@@ -73,17 +110,19 @@ export const updateContact = async (req, res) => {
 
 export const deleteContact = async (req, res) => {
   const { id } = req.params;
+  console.log("id", id);
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid contact ID.' });
+  }
 
   const contact = await Contact.findByIdAndDelete(id);
   if (!contact) {
-    throw new NotFoundErrorAPI("Contact not found");
+    return res.status(404).json({ message: "Contact not found" });
   }
 
-  res
-    .status(StatusCodes.OK)
-    .json({ message: `Contact created by  ${contact.fullName} deleted with success.` });
+  res.status(200).json({ message: "Contact deleted successfully" });
 };
-
 
 export const getContactReport = async (req, res, next) => {
   const { id } = req.params;
