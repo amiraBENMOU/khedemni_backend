@@ -8,6 +8,7 @@ import notFoundRoute from "./middlewares/notFoundRoute.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import contactRouter from "./routes/contact.js";
 import { engine } from "express-handlebars";
+import userRouter from "./routes/user.js";
 
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/contact", contactRouter);
+app.use("/user", userRouter);
 app.get("/", async (req, res) => {
   res.json({ message: "Hello world" });
 });
