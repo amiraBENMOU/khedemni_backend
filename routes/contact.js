@@ -7,6 +7,7 @@ import {
   getContacts,
   updateContact,
   getContactReport,
+  fetchUsersWithContacts,
 } from "../controllers/contact.js";
 
 
@@ -22,6 +23,8 @@ contactRouter.get("/:id/getContact", getContactById);
 contactRouter.patch("/:id/updateContact", updateContact);
 
 contactRouter.delete("/:id/deleteContact", deleteContact);
+
+contactRouter.get("/fetchUserContact", fetchUsersWithContacts);
 
 //report
 

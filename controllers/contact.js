@@ -123,7 +123,39 @@ export const deleteContact = async (req, res) => {
 
   res.status(200).json({ message: "Contact deleted successfully" });
 };
+//the users that have written an contactUs email 
+export const fetchUsersWithContacts = async () => {
+  try {
+    const result = await Contact.aggregate([
+      {
+        $lookup: {
+          from: "Contact", // The name of the Contact collection
+          foreignField: "_id", // Field in User model
+          as: "userDetails", // Output field
+        },
+      },
+      {
+        $unwind: "$userDetails", // Deconstruct the array from $lookup
+      },
+      {
+        $project: {
+          "userDetails.fullName": 1,
+          "userDetails.email": 1,
+          "userDetails.phoneNumber": 1,
+          fullName: 1,
+          email: 1,
+          content: 1,
+        },
+      },
+    ]);
 
+    console.log("Users with contacts:", result);
+    return result;
+  } catch (error) {
+    console.error("Error fetching users with contacts:", error);
+  }
+};
+// contact report 
 export const getContactReport = async (req, res, next) => {
   const { id } = req.params;
   console.log("id", id);
