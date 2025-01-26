@@ -1,6 +1,5 @@
 import "express-async-errors";
 import express from "express";
-import morgan from "morgan";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import connectServer from "./config/server.js";
@@ -11,7 +10,7 @@ import { engine } from "express-handlebars";
 import userRouter from "./routes/user.js";
 
 
-const app = express();
+export const app = express();
 
 // hbs 
 app.engine("hbs", engine({ extname: '.hbs' }));
@@ -20,10 +19,8 @@ app.set("view engine", "hbs");
 
 //middelware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-
+app.use(express.json({limit: "25mb"}));
+app.use(express.urlencoded({ extended: true , limit:"25mb" }));
 // Routes
 app.use("/contact", contactRouter);
 app.use("/user", userRouter);
