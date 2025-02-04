@@ -38,6 +38,9 @@ export const createCompany = async (req, res) => {
     if (!adresse || adresse.length <= 4) {
       return "INVALID_ADRESSE";
     }
+    if (webPage && !webPage.startsWith("http://")) {
+      return "INVALID_WEBPAGE";
+    }
 
     return "VALID";
   };
@@ -55,6 +58,8 @@ export const createCompany = async (req, res) => {
     return res.status(400).json({ message: "Adresse is required and must be greater than 4 characters." });
     case "INVALID_PHONE":
       return res.status(400).json({ message: "Phone number is required and must start with 07 or 06 or 05 and has 10 numbers ." });
+      case "INVALID_WEBPAGE":
+      return res.status(400).json({ message: "Web page must start with 'http://'." });
      
     case "VALID":
       console.log("All validations passed");
@@ -69,13 +74,26 @@ if (existingCompany) {
   return res.status(400).json({ message: "A company with the same name, email, and phoneNumber already exists." });
 }
 
+  // Upload logo to Cloudinary
+  let logoUrl = '';
+  if (logo) {
+    try {
+      const uploadResponse = await cloudinary.uploader.upload(logo, {
+        upload_preset: 'khedemni',
+      });
+      logoUrl = uploadResponse.secure_url;
+    } catch (error) {
+      return res.status(500).json({ message: 'Failed to upload logo', error });
+    }
+  }
+
   const company = await Company.create({
     companyName,
     email,
     phoneNumber,
     adresse,
     webPage,
-    logo,
+    logo: logoUrl, // Use the secure URL from Cloudinary
   });
 
   res.status(201).json(company);
