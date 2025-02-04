@@ -1,45 +1,61 @@
 import { StatusCodes } from "http-status-codes";
 import mongoose from "mongoose";
 // { BadRequestErrorAPI } from "../utils/errorAPI";
-import Contact from "../models/Contact.js";
+import Company from "../models/company.js";
 import  buildReport from "../utils/pdf.js";
 import { Readable } from "stream"; // Import Readable
+import cloudinary from '../config/cloudinary.js';
 
-/************************** Contact MANAGMENT  ********************************/
-export const createContact = async (req, res) => {
-  const { fullName, email, content } = req.body;
+/************************** Company MANAGMENT  ********************************/
+export const createCompany = async (req, res) => {
+  const { companyName,email,phoneNumber,adresse,webPage,logo } = req.body;
 
   console.log("Request Body:", req.body);
 
-  const validateContact = (fullName, email, content) => {
+  const validateCompany = (companyName, email,adresse,phoneNumber) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const validDomains = ["hotmail.fr", "gmail.com"];
     const emailDomain = email.split("@")[1];
+    const phoneRegex = /^(06|05|07)\d{8}$/; // Regex to validate phone number
 
-    if (!fullName || fullName.length <= 4) {
-      return "INVALID_FULLNAME";
+
+    if (!companyName || companyName.length <= 4) {
+      return "INVALID_COMPANYNAME";
     }
 
     if (!email || !email.includes("@") || !emailRegex.test(email) || !validDomains.includes(emailDomain)) {
       return "INVALID_EMAIL";
     }
 
-    if (!content || content.length <= 4) {
+    if (!adresse || adresse.length <= 4) {
       return "INVALID_CONTENT";
+    }
+
+    if (!phoneNumber || !phoneRegex.test(phoneNumber)) {
+      return "INVALID_PHONE";
+    }
+
+    if (!adresse || adresse.length <= 4) {
+      return "INVALID_ADRESSE";
     }
 
     return "VALID";
   };
 
-  const validationResult = validateContact(fullName, email, content);
+ 
+
+  const validationResult = validateCompany(companyName, email,adresse,phoneNumber);
 
   switch (validationResult) {
-    case "INVALID_FULLNAME":
-      return res.status(400).json({ message: "Full name is required and must be greater than 4 characters." });
+    case "INVALID_COMPANYNAME":
+      return res.status(400).json({ message: "company name is required and must be greater than 4 characters." });
     case "INVALID_EMAIL":
       return res.status(400).json({ message: "Email is required and must be a valid email address including @ and ending with 'hotmail.fr' or 'gmail.com'." });
-    case "INVALID_CONTENT":
-      return res.status(400).json({ message: "Content is required and must be greater than 4 characters." });
+    case "INVALID_ADRESSE":
+    return res.status(400).json({ message: "Adresse is required and must be greater than 4 characters." });
+    case "INVALID_PHONE":
+      return res.status(400).json({ message: "Phone number is required and must start with 07 or 06 or 05 and has 10 numbers ." });
+     
     case "VALID":
       console.log("All validations passed");
       break;
@@ -48,137 +64,85 @@ export const createContact = async (req, res) => {
   }
 
 // Check for duplicate contact
-const existingContact = await Contact.findOne({ fullName, email, content });
-if (existingContact) {
-  return res.status(400).json({ message: "A contact with the same name, email, and content already exists." });
+const existingCompany = await Company.findOne({ companyName, email, phoneNumber });
+if (existingCompany) {
+  return res.status(400).json({ message: "A company with the same name, email, and phoneNumber already exists." });
 }
 
-  const contact = await Contact.create({
-    fullName,
+  const company = await Company.create({
+    companyName,
     email,
-    content,
+    phoneNumber,
+    adresse,
+    webPage,
+    logo,
   });
 
-  res.status(201).json(contact);
+  res.status(201).json(company);
 };
-export const getContacts = async (req, res) => {
-  const { fullName, email, id } = req.query;
+export const getCompanies = async (req, res) => {
+  const { id, companyName, email, phoneNumber, adresse, webPage, logo } = req.query;
 
   // Build a filter object dynamically
   const filter = {};
-  if (fullName) filter.fullName = { $regex: fullName, $options: "i" }; // Case-insensitive regex search
-  if (email) filter.email = { $regex: email, $options: "i" };
   if (id) filter._id = id; // Exact match for ID
+  if (companyName) filter.companyName = { $regex: companyName, $options: "i" }; // Case-insensitive regex search
+  if (email) filter.email = { $regex: email, $options: "i" };
+  if (phoneNumber) filter.phoneNumber = { $regex: phoneNumber, $options: "i" };
+  if (adresse) filter.adresse = { $regex: adresse, $options: "i" };
+  if (webPage) filter.webPage = { $regex: webPage, $options: "i" };
 
   try {
-    const contacts = await Contact.find(filter);
-    res.status(StatusCodes.OK).json(contacts);
+    const companies = await Company.find(filter);
+    res.status(StatusCodes.OK).json(companies);
   } catch (error) {
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Error fetching contacts", error });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Error fetching companies", error });
   }
 };
 
-export const getContactById = async (req, res) => {
+export const getCompaniesById = async (req, res) => {
   const { id } = req.params;
     // Validate `id` to ensure it's a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid contact ID.' });
+      return res.status(400).json({ message: 'Invalid company ID.' });
     }
   
-   const contact = await Contact.findById(id);
-  res.status(StatusCodes.OK).json(contact);
+   const company= await Company.findById(id);
+  res.status(StatusCodes.OK).json(company);
 };
 
-export const updateContact = async (req, res) => {
+export const updateCompany = async (req, res) => {
   const { id } = req.params;
-  const { fullName, email, content } = req.body;
+  const { companyName,email,phoneNumber,adresse,webPage,logo } = req.body;
 
-  const contact = await Contact.findByIdAndUpdate(
+  const company = await Company.findByIdAndUpdate(
     id,
     {
-      fullName,
+      companyName,
       email,
-      content,
+      phoneNumber,
+      adresse,
+      webPage,
+      logo,
     },
     { new: true }
   );
 
-  res.status(StatusCodes.OK).json(contact);
+  res.status(StatusCodes.OK).json(company);
 };
 
-export const deleteContact = async (req, res) => {
+export const deleteCompany = async (req, res) => {
   const { id } = req.params;
   console.log("id", id);
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid contact ID.' });
+    return res.status(400).json({ message: 'Invalid company ID.' });
   }
 
-  const contact = await Contact.findByIdAndDelete(id);
-  if (!contact) {
-    return res.status(404).json({ message: "Contact not found" });
+  const company = await Company.findByIdAndDelete(id);
+  if (!company) {
+    return res.status(404).json({ message: "Company not found" });
   }
 
-  res.status(200).json({ message: "Contact deleted successfully" });
-};
-//the users that have written an contactUs email 
-export const fetchUsersWithContacts = async () => {
-  try {
-    const result = await Contact.aggregate([
-      {
-        $lookup: {
-          from: "Contact", // The name of the Contact collection
-          foreignField: "_id", // Field in User model
-          as: "userDetails", // Output field
-        },
-      },
-      {
-        $unwind: "$userDetails", // Deconstruct the array from $lookup
-      },
-      {
-        $project: {
-          "userDetails.fullName": 1,
-          "userDetails.email": 1,
-          "userDetails.phoneNumber": 1,
-          fullName: 1,
-          email: 1,
-          content: 1,
-        },
-      },
-    ]);
-
-    console.log("Users with contacts:", result);
-    return result;
-  } catch (error) {
-    console.error("Error fetching users with contacts:", error);
-  }
-};
-// contact report 
-export const getContactReport = async (req, res, next) => {
-  const { id } = req.params;
-  console.log("id", id);
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid contact ID.' });
-  }
-
-  const contact = await Contact.findById(id);
-  if (!contact) return next(new HttpError.NotFoundError("Contact not found"));
-
-  const data = { contacts: [contact.toObject()] };
-     console.log("data", data);
-  const pdfBuffer = await buildReport("../view/contact.hbs", data, {
-    format: "A4",
-    landscape: true,
-  });
-
-  // Create a readable stream from the PDF buffer
-  const stream = new Readable();
-  stream.push(pdfBuffer);
-  stream.push(null);
-
-  res.setHeader('Content-Type', 'application/pdf');
-  stream.pipe(res);
+  res.status(200).json({ message: "Company deleted successfully" });
 };

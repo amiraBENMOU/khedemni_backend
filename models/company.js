@@ -18,6 +18,15 @@ const companySchema = new Schema({
     type: String,
     required: [true, "Adresse is required"],
   },
+  webPage: {
+    type: String,
+    required: [true, "Web page is required"],
+  },
+
+  logo: {
+    type: String,
+    required: [true, "Logo is required"],
+  },
   
 });
 
