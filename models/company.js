@@ -23,9 +23,11 @@ const companySchema = new Schema({
     required: [true, "Web page is required"],
   },
 
-  logo: {
+ image: {
     type: String,
     required: [true, "Logo is required"],
+      default:
+        "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg?20200913095930",
   },
   
 });

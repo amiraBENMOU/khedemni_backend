@@ -1,23 +1,21 @@
 import { StatusCodes } from "http-status-codes";
 import mongoose from "mongoose";
-// { BadRequestErrorAPI } from "../utils/errorAPI";
 import Company from "../models/company.js";
-import  buildReport from "../utils/pdf.js";
-import { Readable } from "stream"; // Import Readable
-import cloudinary from '../config/cloudinary.js';
+import upload from '../middlewares/multer.js';
+import { uploadImage } from "../utils/image.js";
 
-/************************** Company MANAGMENT  ********************************/
+
+/************************** Company MANAGEMENT  ********************************/
 export const createCompany = async (req, res) => {
-  const { companyName,email,phoneNumber,adresse,webPage,logo } = req.body;
+  const { companyName, email, phoneNumber, adresse, webPage} = req.body;
 
   console.log("Request Body:", req.body);
 
-  const validateCompany = (companyName, email,adresse,phoneNumber) => {
+  const validateCompany = (companyName, email, adresse, phoneNumber, webPage) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const validDomains = ["hotmail.fr", "gmail.com"];
     const emailDomain = email.split("@")[1];
     const phoneRegex = /^(06|05|07)\d{8}$/; // Regex to validate phone number
-
 
     if (!companyName || companyName.length <= 4) {
       return "INVALID_COMPANYNAME";
@@ -28,16 +26,13 @@ export const createCompany = async (req, res) => {
     }
 
     if (!adresse || adresse.length <= 4) {
-      return "INVALID_CONTENT";
+      return "INVALID_ADRESSE";
     }
 
     if (!phoneNumber || !phoneRegex.test(phoneNumber)) {
       return "INVALID_PHONE";
     }
 
-    if (!adresse || adresse.length <= 4) {
-      return "INVALID_ADRESSE";
-    }
     if (webPage && !webPage.startsWith("http://")) {
       return "INVALID_WEBPAGE";
     }
@@ -45,59 +40,45 @@ export const createCompany = async (req, res) => {
     return "VALID";
   };
 
- 
-
-  const validationResult = validateCompany(companyName, email,adresse,phoneNumber);
+  const validationResult = validateCompany(companyName, email, adresse, phoneNumber, webPage);
 
   switch (validationResult) {
     case "INVALID_COMPANYNAME":
-      return res.status(400).json({ message: "company name is required and must be greater than 4 characters." });
+      return res.status(400).json({ message: "Company name is required and must be greater than 4 characters." });
     case "INVALID_EMAIL":
       return res.status(400).json({ message: "Email is required and must be a valid email address including @ and ending with 'hotmail.fr' or 'gmail.com'." });
     case "INVALID_ADRESSE":
-    return res.status(400).json({ message: "Adresse is required and must be greater than 4 characters." });
+      return res.status(400).json({ message: "Adresse is required and must be greater than 4 characters." });
     case "INVALID_PHONE":
-      return res.status(400).json({ message: "Phone number is required and must start with 07 or 06 or 05 and has 10 numbers ." });
-      case "INVALID_WEBPAGE":
+      return res.status(400).json({ message: "Phone number is required and must start with 06, 05, or 07 and be 10 digits long." });
+    case "INVALID_WEBPAGE":
       return res.status(400).json({ message: "Web page must start with 'http://'." });
-     
     case "VALID":
       console.log("All validations passed");
       break;
     default:
-      return res.status(400).json({ message: "Invalid contact" });
+      return res.status(400).json({ message: "Invalid data" });
   }
 
-// Check for duplicate contact
-const existingCompany = await Company.findOne({ companyName, email, phoneNumber });
-if (existingCompany) {
-  return res.status(400).json({ message: "A company with the same name, email, and phoneNumber already exists." });
-}
 
-  // Upload logo to Cloudinary
-  let logoUrl = '';
-  if (logo) {
-    try {
-      const uploadResponse = await cloudinary.uploader.upload(logo, {
-        upload_preset: 'khedemni',
-      });
-      logoUrl = uploadResponse.secure_url;
-    } catch (error) {
-      return res.status(500).json({ message: 'Failed to upload logo', error });
-    }
-  }
+  
+    // Upload logo to Cloudinary if provided
+    const image = req?.files?.image;
+    const uploadedImage = await uploadImage(image, "company/logo");
 
-  const company = await Company.create({
-    companyName,
-    email,
-    phoneNumber,
-    adresse,
-    webPage,
-    logo: logoUrl, // Use the secure URL from Cloudinary
-  });
+    // Create company with the logo URL
+    const company = await Company.create({
+      companyName,
+      email,
+      phoneNumber,
+      adresse,
+      webPage,
+      image: uploadedImage?.secure_url,
+    });
 
-  res.status(201).json(company);
-};
+    console.log("Company created:", company);
+    res.status(201).json(company);
+ };
 export const getCompanies = async (req, res) => {
   const { id, companyName, email, phoneNumber, adresse, webPage, logo } = req.query;
 
@@ -163,4 +144,4 @@ export const deleteCompany = async (req, res) => {
   }
 
   res.status(200).json({ message: "Company deleted successfully" });
-};
+}
