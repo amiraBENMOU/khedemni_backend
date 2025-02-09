@@ -20,7 +20,6 @@ const companySchema = new Schema({
   },
   webPage: {
     type: String,
-    required: [true, "Web page is required"],
   },
 
  image: {

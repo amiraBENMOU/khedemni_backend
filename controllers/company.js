@@ -1,17 +1,15 @@
 import { StatusCodes } from "http-status-codes";
 import mongoose from "mongoose";
 import Company from "../models/company.js";
-import upload from '../middlewares/multer.js';
-import { uploadImage } from "../utils/image.js";
 
 
 /************************** Company MANAGEMENT  ********************************/
 export const createCompany = async (req, res) => {
-  const { companyName, email, phoneNumber, adresse, webPage} = req.body;
+  const { companyName, email, phoneNumber, adresse, webPage, image: imageUrl } = req.body;
 
   console.log("Request Body:", req.body);
 
-  const validateCompany = (companyName, email, adresse, phoneNumber, webPage) => {
+  /*const validateCompany = (companyName, email,phoneNumber, adresse) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const validDomains = ["hotmail.fr", "gmail.com"];
     const emailDomain = email.split("@")[1];
@@ -33,54 +31,53 @@ export const createCompany = async (req, res) => {
       return "INVALID_PHONE";
     }
 
-    if (webPage && !webPage.startsWith("http://")) {
-      return "INVALID_WEBPAGE";
-    }
+   /* if (webPage && !webPage.startsWith("http://")) {
+         return "INVALID_WEBPAGE";
+   }
 
     return "VALID";
   };
+*/
+  // const validationResult = validateCompany(companyName, email, phoneNumber, adresse);
 
-  const validationResult = validateCompany(companyName, email, adresse, phoneNumber, webPage);
-
-  switch (validationResult) {
-    case "INVALID_COMPANYNAME":
-      return res.status(400).json({ message: "Company name is required and must be greater than 4 characters." });
-    case "INVALID_EMAIL":
-      return res.status(400).json({ message: "Email is required and must be a valid email address including @ and ending with 'hotmail.fr' or 'gmail.com'." });
-    case "INVALID_ADRESSE":
-      return res.status(400).json({ message: "Adresse is required and must be greater than 4 characters." });
-    case "INVALID_PHONE":
-      return res.status(400).json({ message: "Phone number is required and must start with 06, 05, or 07 and be 10 digits long." });
-    case "INVALID_WEBPAGE":
-      return res.status(400).json({ message: "Web page must start with 'http://'." });
-    case "VALID":
-      console.log("All validations passed");
-      break;
-    default:
-      return res.status(400).json({ message: "Invalid data" });
-  }
+  // switch (validationResult) {
+  //   case "INVALID_COMPANYNAME":
+  //     return res.status(400).json({ message: "Company name is required and must be greater than 4 characters." });
+  //   case "INVALID_EMAIL":
+  //     return res.status(400).json({ message: "Email is required and must be a valid email address including @ and ending with 'hotmail.fr' or 'gmail.com'." });
+  //  case "INVALID_ADRESSE":
+  //    return res.status(400).json({ message: "Adresse is required and must be greater than 4 characters." });
+  //   case "INVALID_PHONE":
+  //     return res.status(400).json({ message: "Phone number is required and must start with 06, 05, or 07 and be 10 digits long." });
+  //   /*case "INVALID_WEBPAGE":
+  //     return res.status(400).json({ message: "Web page must start with 'http://'." });*/
+  //   case "VALID":
+  //     console.log("All validations passed");
+  //     break;
+  //   default:
+  //     return res.status(400).json({ message: "Invalid data" });
+  // }
 
 
-  
-    // Upload logo to Cloudinary if provided
-    const image = req?.files?.image;
-    const uploadedImage = await uploadImage(image, "company/logo");
-
-    // Create company with the logo URL
+  try {
     const company = await Company.create({
       companyName,
       email,
       phoneNumber,
       adresse,
       webPage,
-      image: uploadedImage?.secure_url,
+      image: req.body.image,
     });
 
     console.log("Company created:", company);
     res.status(201).json(company);
+  } catch (error) {
+    console.error("Error creating company :", error);
+    res.status(400).json({ message: error.message });
+  }
  };
 export const getCompanies = async (req, res) => {
-  const { id, companyName, email, phoneNumber, adresse, webPage, logo } = req.query;
+  const { id, companyName, email, phoneNumber, adresse, webPage,image } = req.query;
 
   // Build a filter object dynamically
   const filter = {};
@@ -112,7 +109,7 @@ export const getCompaniesById = async (req, res) => {
 
 export const updateCompany = async (req, res) => {
   const { id } = req.params;
-  const { companyName,email,phoneNumber,adresse,webPage,logo } = req.body;
+  const { companyName,email,phoneNumber,adresse,webPage,image } = req.body;
 
   const company = await Company.findByIdAndUpdate(
     id,
@@ -122,7 +119,7 @@ export const updateCompany = async (req, res) => {
       phoneNumber,
       adresse,
       webPage,
-      logo,
+      image,
     },
     { new: true }
   );

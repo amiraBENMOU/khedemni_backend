@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-import User from './user.js'
 
 const contactSchema = new Schema({
   fullName: {
@@ -14,11 +13,7 @@ const contactSchema = new Schema({
     type: String,
     required: [true, "Content is required"],
   },
-userId: {
-    type: Schema.Types.ObjectId, // Reference to the User model
-   ref: 'User',
-    required: true,
-  },
+
 });
 
 export default model("Contact", contactSchema);
