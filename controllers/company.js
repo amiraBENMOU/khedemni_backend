@@ -9,7 +9,7 @@ export const createCompany = async (req, res) => {
 
   console.log("Request Body:", req.body);
 
-  /*const validateCompany = (companyName, email,phoneNumber, adresse) => {
+  const validateCompany = (companyName, email,phoneNumber, adresse) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const validDomains = ["hotmail.fr", "gmail.com"];
     const emailDomain = email.split("@")[1];
@@ -31,32 +31,32 @@ export const createCompany = async (req, res) => {
       return "INVALID_PHONE";
     }
 
-   /* if (webPage && !webPage.startsWith("http://")) {
+    if (webPage && !webPage.startsWith("http://")) {
          return "INVALID_WEBPAGE";
    }
 
     return "VALID";
   };
-*/
-  // const validationResult = validateCompany(companyName, email, phoneNumber, adresse);
 
-  // switch (validationResult) {
-  //   case "INVALID_COMPANYNAME":
-  //     return res.status(400).json({ message: "Company name is required and must be greater than 4 characters." });
-  //   case "INVALID_EMAIL":
-  //     return res.status(400).json({ message: "Email is required and must be a valid email address including @ and ending with 'hotmail.fr' or 'gmail.com'." });
-  //  case "INVALID_ADRESSE":
-  //    return res.status(400).json({ message: "Adresse is required and must be greater than 4 characters." });
-  //   case "INVALID_PHONE":
-  //     return res.status(400).json({ message: "Phone number is required and must start with 06, 05, or 07 and be 10 digits long." });
-  //   /*case "INVALID_WEBPAGE":
-  //     return res.status(400).json({ message: "Web page must start with 'http://'." });*/
-  //   case "VALID":
-  //     console.log("All validations passed");
-  //     break;
-  //   default:
-  //     return res.status(400).json({ message: "Invalid data" });
-  // }
+  const validationResult = validateCompany(companyName, email, phoneNumber, adresse);
+
+   switch (validationResult) {
+     case "INVALID_COMPANYNAME":
+       return res.status(400).json({ message: "Company name is required and must be greater than 4 characters." });
+     case "INVALID_EMAIL":
+      return res.status(400).json({ message: "Email is required and must be a valid email address including @ and ending with 'hotmail.fr' or 'gmail.com'." });
+    case "INVALID_ADRESSE":
+       return res.status(400).json({ message: "Adresse is required and must be greater than 4 characters." });
+   case "INVALID_PHONE":
+      return res.status(400).json({ message: "Phone number is required and must start with 06, 05, or 07 and be 10 digits long." });
+   case "INVALID_WEBPAGE":
+      return res.status(400).json({ message: "Web page must start with 'http://'." });
+   case "VALID":
+       console.log("All validations passed");
+    break;
+        default:
+      return res.status(400).json({ message: "Invalid data" });
+    }
 
 
   try {
