@@ -46,4 +46,4 @@ const ourRecrutmentSchema = new Schema({
   
 });
 
-export default model("Company", companySchema);
+export default model("Position", ourRecrutmentSchema);
