@@ -8,23 +8,23 @@ import Position from "../models/ourRecrutment.js";
  */
 export const createPosition = async (req, res) => {
   try {
-    const { positionTitle,positionType,Domain,DescriptionOfThePosition,typeOfContract,numberOfPepeol } = req.body;
+    const { positionTitle, positionType, Domain, DescriptionOfThePosition, typeOfContract, numberOfPepeol } = req.body;
 
     // Check if all required fields are provided
-    if (!positionTitle || !positionType || !Domain || !typeOfContract ) {
+    if (!positionTitle || !positionType || !Domain || !DescriptionOfThePosition || !typeOfContract) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const position = new Position({
-        positionTitle,
-        positionType,
-        Domain,
-        DescriptionOfThePosition,
-        typeOfContract,
-        numberOfPepeol,
+    const position = await position.create({
+      positionTitle,
+      positionType,
+      Domain,
+      DescriptionOfThePosition,
+      typeOfContract,
+      numberOfPepeol,
     });
 
-    await position.save();
+    //await position.save();
     res.status(201).json(position);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -37,7 +37,7 @@ export const createPosition = async (req, res) => {
  */
 export const getPositions = async (req, res) => {
   try {
-    const Positions = await position.find().populate("position"); // Populate company details
+    const Positions = await Position.find().populate("position"); // Populate company details
     res.status(200).json(jobs);
   } catch (error) {
     res.status(500).json({ message: error.message });

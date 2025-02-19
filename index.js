@@ -9,6 +9,7 @@ import contactRouter from "./routes/contact.js";
 import { engine } from "express-handlebars";
 import userRouter from "./routes/user.js";
 import companyRouter from "./routes/company.js";
+import positionRouter from "./routes/ourRecrutment.js";
 //file upload 
 import fileUpload from "express-fileupload";
 
@@ -30,6 +31,7 @@ app.use(fileUpload({ useTempFiles: true }));
 app.use("/contact", contactRouter);
 app.use("/user", userRouter);
 app.use("/company", companyRouter);
+app.use("/position", positionRouter);
 app.get("/", async (req, res) => {
   res.json({ message: "Hello world" });
 });
