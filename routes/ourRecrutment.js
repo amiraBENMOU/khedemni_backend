@@ -12,9 +12,9 @@ import {
 // Create a new router
 const positionRouter = express.Router();
 
-positionRouter.post("/", createPosition);
+positionRouter.post("/createPosition", createPosition);
 
-positionRouter.get("/", getPositions);
+positionRouter.get("/getPositions", getPositions);
 
 positionRouter.get("/:id", getPositionById);
 

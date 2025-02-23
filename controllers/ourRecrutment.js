@@ -15,7 +15,7 @@ export const createPosition = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const position = await position.create({
+    const position = await Position.create({
       positionTitle,
       positionType,
       Domain,
@@ -36,9 +36,10 @@ export const createPosition = async (req, res) => {
  * @route   GET /api/jobs
  */
 export const getPositions = async (req, res) => {
+  const {positionTitle, positionType,Domain,DescriptionOfThePosition,typeOfContract,numberOfPepeol, id } = req.query;
   try {
-    const Positions = await Position.find().populate("position"); // Populate company details
-    res.status(200).json(jobs);
+    const positions = await Position.find(); // Populate company details
+    res.status(200).json(positions);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
