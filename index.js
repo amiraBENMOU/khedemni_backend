@@ -11,7 +11,7 @@ import userRouter from "./routes/user.js";
 import companyRouter from "./routes/company.js";
 import positionRouter from "./routes/ourRecrutment.js";
 //file upload 
-import fileUpload from "express-fileupload";
+import upload from './config/upload.js';
 
 
 export const app = express();
@@ -26,7 +26,7 @@ app.use(cors());
 app.use(express.json({limit: "25mb"}));
 app.use(express.urlencoded({ extended: true , limit:"25mb" }));
 //TO UPLOAD FILES
-app.use(fileUpload({ useTempFiles: true }));
+app.use('/uploads', express.static('uploads')); // Serve uploaded files
 // Routes
 app.use("/contact", contactRouter);
 app.use("/user", userRouter);
