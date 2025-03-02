@@ -3,7 +3,7 @@ import "dotenv/config";
 
 mongoose.set("strictQuery", true);
 
-const mongodb_url = "mongodb://localhost:27017/contact";
+const mongodb_url = process.env.MONGODB_URL;
 
 const connectDB = async () => {
   try {
