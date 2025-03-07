@@ -1,6 +1,9 @@
 import { StatusCodes } from "http-status-codes";
 import mongoose from "mongoose";
 import Position from "../models/ourRecrutment.js";
+import fs from 'fs';
+import path from 'path';
+
 
 /**
  * @desc    Create a new job
@@ -112,4 +115,19 @@ export const uploadFile = (req, res) => {
     return res.status(400).json({ message: 'No file uploaded' });
   }
   res.status(200).json({ filePath: `./uploads/${req.file.filename}`, message: 'File uploaded successfully' });
+};
+//get the uploaded files 
+export const getUploadFiles = (req, res) => {
+  const uploadDir = './uploads/';
+  
+  fs.readdir(uploadDir, (err, files) => {
+      if (err) {
+          return res.status(500).send({ message: "Unable to scan files", error: err.message });
+      }
+      
+      // Filter out any non-file entries
+      const fileList = files.filter(file => fs.lstatSync(path.join(uploadDir, file)).isFile());
+      
+      res.status(200).send({ files: fileList });
+  });
 };

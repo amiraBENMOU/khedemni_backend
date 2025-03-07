@@ -8,6 +8,7 @@ import {
     updatePosition,
     deletePosition,
     uploadFile,
+    getUploadFiles,
 } from "../controllers/ourRecrutment.js";
 import multer from 'multer';
 
@@ -33,6 +34,8 @@ positionRouter.post("/createPosition", createPosition);
 positionRouter.get("/getPositions", getPositions);
 //uploadFile
 positionRouter.post("/upload",upload.single('file'), uploadFile);
+// Get uploaded files
+positionRouter.get("/uploads", getUploadFiles);
 
 positionRouter.get("/:id", getPositionById);
 
