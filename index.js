@@ -1,6 +1,7 @@
 import "express-async-errors";
 import express from "express";
 import cors from "cors";
+import path from 'path';
 import connectDB from "./config/db.js";
 import connectServer from "./config/server.js";
 import notFoundRoute from "./middlewares/notFoundRoute.js";

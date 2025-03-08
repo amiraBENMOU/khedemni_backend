@@ -121,13 +121,17 @@ export const getUploadFiles = (req, res) => {
   const uploadDir = './uploads/';
   
   fs.readdir(uploadDir, (err, files) => {
-      if (err) {
-          return res.status(500).send({ message: "Unable to scan files", error: err.message });
-      }
-      
-      // Filter out any non-file entries
-      const fileList = files.filter(file => fs.lstatSync(path.join(uploadDir, file)).isFile());
-      
-      res.status(200).send({ files: fileList });
+    if (err) {
+      return res.status(500).json({ message: "Unable to scan files", error: err.message });
+    }
+
+    const fileList = files
+      .filter(file => fs.lstatSync(path.join(uploadDir, file)).isFile())
+      .map(file => ({
+        fileName: file,
+        url: `http://localhost:50000/uploads/${file}` // Adjust the server URL
+      }));
+
+    res.status(200).json(fileList);
   });
 };
